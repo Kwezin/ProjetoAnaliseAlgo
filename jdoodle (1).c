@@ -1,3 +1,4 @@
+// Exercicio 04
 #include <stdbool.h>
 #include <stdio.h>    // Para perror e printf
 
