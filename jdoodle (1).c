@@ -2,25 +2,23 @@
 #include <stdbool.h>
 #include <stdio.h>    // Para perror e printf
 
-bool segmento(int seq[8], int seg[3]){
+bool segmento(int seq[], int n, int seg[], int k){
     int i, j;
-    
-    for(i=0; i<8; i++){
+
+    for(i=0; i<n; i++){
        if(seg[0] == seq[i]){
            int aux = i+1;
-           int count_true = 1;
-           for(j=1; j<3 ; j++){
+           for(j=1; j<k ; j++){
                if(seg[j] == seq[aux]){
-                   count_true++;
                    aux++;
-                   
+
                }else{
                    break;
                }
-               
+
            }
-           
-           if(j==3){ // n
+
+           if(j==k){
                return true;
            }
        }
@@ -28,19 +26,19 @@ bool segmento(int seq[8], int seg[3]){
     return false;
 }
 int main(){
-    int sequencia[8] = {1, 2, 3, 4, 5, 6, 7, 8};
-    int seguimento[3] = {5, 6, 7};
-    
-    bool reposta = segmento(sequencia, seguimento);
-    
+    int sequencia[8] = {1, 4, 3, 4, 5, 6, 7, 8};
+    int seguimento[1] = {8};
+
+    bool reposta = segmento(sequencia, 8, seguimento, 1);
+
     if (reposta == true){
         printf("É um segmento");
-        
+
     }
-    
+
     else{
         printf("Não é um segmento");
     }
-    
+
     return -1;
 }
