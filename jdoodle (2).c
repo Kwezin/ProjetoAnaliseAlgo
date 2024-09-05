@@ -1,38 +1,28 @@
-// Exercicio 5 da Lista 1
+//Exercicio 03
+#include <stdio.h>
 
-#include <stdbool.h>
-#include <stdio.h>    // Para perror e printf
-
-int seq_max(int seq[], int n){
-    int i, max = 1, aux = 0;
+int bitonic(int v[], int inicio, int fim){
+    int meio = (inicio +fim)/2;
     
-    for(i=0; i<n-1; i++){
-        if(seq[i] < seq[i+1]){
-            max += 1; 
-            if(aux < max){
-                aux = max;
-            }
-        }else{
-            max = 1;
-            
-        }
+    
+    if(v[meio] > v[meio+1] && v[meio] > v[meio-1]){
+        return v[meio];
     }
     
-    if (aux > 0){
-        return aux;
+    else if(v[meio-1] > v[meio]){
+        fim = meio;
+        return bitonic(v, inicio, fim);
+    }else{
+        inicio = meio;
+        return bitonic(v, inicio, fim);
     }
-    
-    return max;
-   
 }
 int main(){
-    int sequencia[] = {11, 10, 12, 6, 5, 4, 3, 2, 1};
     
-    int reposta = seq_max(sequencia, 9);
+    int v[] = {1, 2, 4, 8, 22, 29, 23, 20};
+    int inicio = 0;
+    int fim = 8;
     
-    printf("Sequencia max: %d", reposta);
-        
-   
-    
-    return -1;
+    int resposta = bitonic(v, inicio, fim);
+    printf("%d", resposta);
 }
