@@ -1,0 +1,28 @@
+#include <stdio.h>
+
+int binario(int s[], int i, int v[], int n){
+    if(i==n){
+        for(int k=0; k<n; k++){
+            printf("%d ", s[k]);
+        }
+        printf("\n");
+        
+    }else{
+        for(int j=0; j<2; j++){
+            s[i] = v[j];
+            binario(s, i+1, v, n);
+        }
+        
+    }
+    return 1;
+}
+int main(){
+    
+    int v[2] = {0, 1};
+    
+    int n = 4;
+    int s[n];
+    
+    binario(s, 0, v, n);
+    
+}
