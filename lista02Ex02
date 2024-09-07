@@ -1,0 +1,51 @@
+// Lista 2 ex 2
+#include<stdio.h>
+
+int permuta(int s[], int i, int v[], int n, int x[]){
+    if(i==n){
+        int soma = 0;
+        for(int k =0; k<n-1; k++){
+            printf("%d", s[k]);
+            
+            int valor = s[k] - s[k+1];
+            
+            if(valor < 0){
+                valor *= -1;
+            }
+            soma += valor;
+        }
+        printf("%d", s[n-1]);
+        
+        printf(" = %d", soma);
+        printf("\n");
+    }
+    else{
+        int j;
+        
+        for(j=0; j<n; j++){
+            
+            if(x[j]==0){
+                x[j] = 1;
+                s[i] = v[j];
+                permuta(s, i+1, v, n, x);
+                x[j] = 0;
+            }
+        }
+    }
+    return 1;
+}
+int main() {
+    
+    int v[4] = {4, 2, 1, 5};
+    
+    int n = 4;
+    int s[n];
+    int x[n];
+    
+    for(int i =0; i<n; i++){
+        x[i] = 0;
+    }
+    
+    permuta(s, 0, v, n, x);
+   
+}
