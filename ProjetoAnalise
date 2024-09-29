@@ -1,0 +1,199 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define TAMANHO 7
+#define VAZIO 0
+#define PECA 1
+#define INVALIDO -1
+
+FILE *saida;
+
+// Tabuleiro do jogo "Resta Um"
+int tabuleiro[TAMANHO][TAMANHO];
+
+// Estrutura para armazenar estados do tabuleiro
+typedef struct {
+    int estado[TAMANHO][TAMANHO];
+} Estado;
+
+// Vetor para armazenar os estados do tabuleiro
+Estado caminho[31]; // No máximo, 31 movimentos no jogo "Resta Um"
+int contadorMovimentos = 0;
+
+// Função para salvar o estado atual do tabuleiro
+void salvarEstado() {
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            caminho[contadorMovimentos].estado[i][j] = tabuleiro[i][j];
+        }
+    }
+    contadorMovimentos++;
+}
+
+// Função para imprimir o tabuleiro no terminal e salvar no arquivo
+void imprimirTabuleiro(int estado[TAMANHO][TAMANHO]) {
+    fprintf(saida, "#########\n");
+    for (int i = 0; i < TAMANHO; i++) {
+        fprintf(saida, "#");
+        for (int j = 0; j < TAMANHO; j++) {
+            if (estado[i][j] == PECA) {
+                fprintf(saida, "o");
+            } else if (estado[i][j] == VAZIO) {
+                fprintf(saida, " ");
+            } else {
+                fprintf(saida, "#");
+            }
+        }
+        fprintf(saida, "#\n");
+    }
+    fprintf(saida, "#########\n\n");
+}
+
+// Verifica se um movimento é válido
+int movimentoValido(int origemX, int origemY, int destinoX, int destinoY) {
+    if (origemX < 0 || origemX >= TAMANHO || origemY < 0 || origemY >= TAMANHO ||
+        destinoX < 0 || destinoX >= TAMANHO || destinoY < 0 || destinoY >= TAMANHO) {
+        return 0;
+    }
+
+    if (tabuleiro[origemX][origemY] != PECA || tabuleiro[destinoX][destinoY] != VAZIO) {
+        return 0;
+    }
+
+    int meioX = (origemX + destinoX) / 2;
+    int meioY = (origemY + destinoY) / 2;
+
+    if (tabuleiro[meioX][meioY] != PECA) {
+        return 0;
+    }
+
+    if ((abs(origemX - destinoX) == 2 && origemY == destinoY) || 
+        (abs(origemY - destinoY) == 2 && origemX == destinoX)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+// Realiza um movimento no tabuleiro
+void realizarMovimento(int origemX, int origemY, int destinoX, int destinoY) {
+    int meioX = (origemX + destinoX) / 2;
+    int meioY = (origemY + destinoY) / 2;
+
+    tabuleiro[origemX][origemY] = VAZIO;
+    tabuleiro[meioX][meioY] = VAZIO;
+    tabuleiro[destinoX][destinoY] = PECA;
+
+    salvarEstado(); // Salva o estado do tabuleiro a cada movimento promissor
+}
+
+// Reverte um movimento no tabuleiro
+void desfazerMovimento(int origemX, int origemY, int destinoX, int destinoY) {
+    int meioX = (origemX + destinoX) / 2;
+    int meioY = (origemY + destinoY) / 2;
+
+    tabuleiro[origemX][origemY] = PECA;
+    tabuleiro[meioX][meioY] = PECA;
+    tabuleiro[destinoX][destinoY] = VAZIO;
+
+    contadorMovimentos--; // Desfaz o movimento no histórico de estados
+}
+
+// Verifica se o jogo foi resolvido (apenas uma peça restante)
+int jogoResolvido() {
+    int contagem = 0;
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            if (tabuleiro[i][j] == PECA) {
+                contagem++;
+            }
+        }
+    }
+    return contagem == 1 && tabuleiro[3][3] == PECA; // Verifica se a peça está no centro
+}
+
+// Função de backtracking para resolver o jogo "Resta Um"
+int resolver(int profundidade) {
+    // Verifica se a solução foi alcançada
+    if (jogoResolvido()) {
+        return 1; // Sucesso
+    }
+
+    // Percorre todo o tabuleiro em busca de peças
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            if (tabuleiro[i][j] == PECA) {
+                // Tenta todos os quatro movimentos possíveis (cima, baixo, esquerda, direita)
+                int movimentos[4][2] = {{-2, 0}, {2, 0}, {0, -2}, {0, 2}};
+                for (int k = 0; k < 4; k++) {
+                    int destinoX = i + movimentos[k][0];
+                    int destinoY = j + movimentos[k][1];
+
+                    if (movimentoValido(i, j, destinoX, destinoY)) {
+                        // Realiza o movimento e avança recursivamente
+                        realizarMovimento(i, j, destinoX, destinoY);
+
+                        // Chama recursivamente a função de backtracking
+                        if (resolver(profundidade + 1)) {
+                            return 1; // Solução encontrada
+                        }
+
+                        // Se a solução não foi encontrada, desfaz o movimento (backtracking)
+                        desfazerMovimento(i, j, destinoX, destinoY);
+                    }
+                }
+            }
+        }
+    }
+
+    return 0; // Se nenhum movimento resultar na solução, retorna falha
+}
+
+// Função para imprimir todo o caminho correto encontrado
+void imprimirCaminhoCorreto() {
+    for (int i = 0; i < contadorMovimentos; i++) {
+        imprimirTabuleiro(caminho[i].estado);
+    }
+}
+
+// Função para ler o tabuleiro de um arquivo de entrada
+void lerTabuleiro(char *nomeArquivo) {
+    FILE *entrada = fopen(nomeArquivo, "r");
+    if (entrada == NULL) {
+        printf("Erro ao abrir arquivo de entrada.\n");
+        exit(1);
+    }
+
+    for (int i = 0; i < TAMANHO; i++) {
+        for (int j = 0; j < TAMANHO; j++) {
+            fscanf(entrada, "%d", &tabuleiro[i][j]);
+        }
+    }
+
+    fclose(entrada);
+}
+
+int main() {
+    saida = fopen("saida_resta1.txt", "w");
+    if (saida == NULL) {
+        printf("Erro ao abrir arquivo de saída.\n");
+        return 1;
+    }
+    
+    printf("O processamento pode demorar alguns segundos...");
+    printf("\n");
+
+    // Lê o tabuleiro do arquivo de entrada
+    lerTabuleiro("tabuleiro_inicial.txt");
+
+    // Resolve o jogo utilizando backtracking
+    if (resolver(0)) {
+        imprimirCaminhoCorreto(); // Imprime o caminho correto após encontrar a solução
+        printf("Jogo resolvido com sucesso!\n");
+    } else {
+        printf("Não foi possível resolver o jogo.\n");
+    }
+
+    fclose(saida);
+    return 0;
+}
