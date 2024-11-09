@@ -1,0 +1,32 @@
+#include <stdio.h>
+
+int maximoVidas(int vidas[], int n) {
+    int max_atual = vidas[0];
+    int max_total = vidas[0];
+
+    for (int i = 1; i < n; i++) {
+        max_atual = (vidas[i] > max_atual + vidas[i]) ? vidas[i] : max_atual + vidas[i];
+        if (max_atual > max_total) {
+            max_total = max_atual;
+        }
+    }
+
+    return max_total;
+}
+
+int main() {
+    int n;
+    printf("Digite o número de salas: ");
+    scanf("%d", &n);
+
+    int vidas[n];
+    printf("Digite o número de vidas em cada sala: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &vidas[i]);
+    }
+
+    int resultado = maximoVidas(vidas, n);
+    printf("Quantidade máxima de vidas que é possível ganhar: %d\n", resultado);
+
+    return 0;
+}
