@@ -1,0 +1,55 @@
+
+#include <stdio.h>
+int fatorial(int n){
+    if (n == 0 || n == 1) {
+        return 1;
+    } else {
+        return n * fatorial(n - 1);
+    }
+}
+
+int maior(int C[], int tam, int troco){
+    int soma = 0;
+    int S[troco];
+    
+    for(int k = 0; k<troco; k++){
+        S[k] = 0;
+    }
+    
+    int i = 0;
+    int j = 0;
+    while(i< tam && soma < troco){
+        int maior_valor = fatorial(C[i]);
+        
+        if(soma + maior_valor <= troco){
+            soma = soma + maior_valor;
+            S[j] = maior_valor;
+            j++;
+        }
+        else{
+            i++;
+        }
+    }
+    
+    if(soma == troco){
+        for(int m=0; m<troco; m++){
+            if(S[m] == 0){
+                return m;
+            }
+        }
+    }
+    else{
+        printf("Não encontrei a solução");
+        return -1;
+    }
+    
+}
+int main(){
+    int Possiveis[10] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    
+    int resposta =  maior(Possiveis, 10, 24);
+    printf("Resultado= = %d", resposta);
+    
+
+    return 0;
+}
