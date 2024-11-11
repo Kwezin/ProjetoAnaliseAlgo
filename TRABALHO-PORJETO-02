@@ -1,0 +1,111 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX 100 // Ajuste para o número máximo de esquinas esperado
+
+typedef struct {
+    int destino;
+    int tempo;
+} Aresta;
+
+typedef struct {
+    Aresta *arestas;
+    int qtdArestas;
+} No;
+
+No mapa[MAX];
+int tempo[MAX];
+int rota[MAX];
+int anterior[MAX];
+
+void inicializarMapa(int n) {
+    for (int i = 1; i <= n; i++) {
+        mapa[i].arestas = NULL;
+        mapa[i].qtdArestas = 0;
+        tempo[i] = INT_MAX;
+        anterior[i] = -1;
+    }
+}
+
+void adicionarAresta(int origem, int destino, int tempo) {
+    mapa[origem].qtdArestas++;
+    mapa[origem].arestas = realloc(mapa[origem].arestas, mapa[origem].qtdArestas * sizeof(Aresta));
+    mapa[origem].arestas[mapa[origem].qtdArestas - 1].destino = destino;
+    mapa[origem].arestas[mapa[origem].qtdArestas - 1].tempo = tempo;
+}
+
+void dijkstra(int n, int incendio) {
+    int visitado[MAX] = {0};
+    tempo[1] = 0;
+
+    for (int i = 1; i <= n; i++) {
+        int menorTempo = INT_MAX;
+        int v = -1;
+
+        for (int j = 1; j <= n; j++) {
+            if (!visitado[j] && tempo[j] < menorTempo) {
+                menorTempo = tempo[j];
+                v = j;
+            }
+        }
+
+        if (v == -1) break;
+        visitado[v] = 1;
+
+        for (int j = 0; j < mapa[v].qtdArestas; j++) {
+            int u = mapa[v].arestas[j].destino;
+            int custo = mapa[v].arestas[j].tempo;
+
+            if (tempo[u] > tempo[v] + custo) {
+                tempo[u] = tempo[v] + custo;
+                anterior[u] = v;
+            }
+        }
+    }
+
+    int count = 0;
+    for (int i = incendio; i != -1; i = anterior[i]) {
+        rota[count++] = i;
+    }
+
+    printf("Rota até a esquina #%d: ", incendio);
+    for (int i = count - 1; i >= 0; i--) {
+        printf("%d ", rota[i]);
+    }
+    printf("\nTempo calculado para rota = %d min.\n", tempo[incendio]);
+
+    FILE *file = fopen("saida.txt", "w");
+    fprintf(file, "Rota até a esquina #%d: ", incendio);
+    for (int i = count - 1; i >= 0; i--) {
+        fprintf(file, "%d ", rota[i]);
+    }
+    fprintf(file, "\nTempo calculado para rota = %d min.\n", tempo[incendio]);
+    fclose(file);
+}
+
+int main() {
+    int incendio, n;
+
+    FILE *entrada = fopen("Entrada.txt", "r");
+    if (!entrada) {
+        printf("Erro ao abrir o arquivo de entrada.\n");
+        return 1;
+    }
+
+    fscanf(entrada, "%d", &incendio);
+    fscanf(entrada, "%d", &n);
+
+    inicializarMapa(n);
+
+    int origem, destino, tempo;
+    while (fscanf(entrada, "%d %d %d", &origem, &destino, &tempo) && origem != 0) {
+        adicionarAresta(origem, destino, tempo);
+    }
+
+    fclose(entrada);
+
+    dijkstra(n, incendio);
+
+    return 0;
+}
